@@ -1,0 +1,28 @@
+[project]
+name = "algorithm-arena"
+version = "0.1.0"
+description = "Metaheuristic optimization algorithms racing on benchmark functions, with live visualization"
+readme = "README.md"
+authors = [
+    { name = "Huseyin Eryilmaz", email = "huseyineryilmaz601283@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.5.1",
+    "scipy>=1.18.0",
+]
+
+[project.scripts]
+algorithm-arena = "algorithm_arena:main"
+
+[build-system]
+requires = ["uv_build>=0.11.28,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "pre-commit>=4.6.0",
+    "pytest>=9.1.1",
+    "ruff>=0.15.21",
+]
