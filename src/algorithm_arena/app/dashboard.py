@@ -12,6 +12,9 @@ from algorithm_arena.visualization import (
     build_contour_animation,
     build_convergence_plot,
 )
+from algorithm_arena.benchmarks.custom import InvalidExpressionError, parse_expression
+from algorithm_arena.benchmarks.functions import BenchmarkFunction
+from algorithm_arena.optimizers.base import Bounds
 
 st.set_page_config(page_title="Algorithm Arena", layout="wide")
 
@@ -26,14 +29,42 @@ with tab_single:
     with col_controls:
         st.subheader("Settings")
 
-        algorithm_name = st.selectbox(
+        algorithm_name: str = st.selectbox(
             "Algorithm", options=list(OPTIMIZER_REGISTRY.keys()), key="single_algo"
+        )  # type: ignore[assignment]
+
+        function_mode = st.radio(
+            "Function Source",
+            options=["Preset Benchmark", "Custom Expression"],
+            key="single_mode",
         )
-        benchmark_name = st.selectbox(
-            "Benchmark Function",
-            options=list(BENCHMARK_REGISTRY.keys()),
-            key="single_bench",
-        )
+
+        # Her iki dala da varsayılan değer veriyoruz, böylece hangi moda
+        # girilirse girilsin tüm değişkenler tanımlı ve doğru tipte olur.
+        benchmark_name: str | None = None
+        custom_expr_str: str = "x**2 + y**2"
+        custom_low: float = -5.0
+        custom_high: float = 5.0
+
+        if function_mode == "Preset Benchmark":
+            benchmark_name = st.selectbox(
+                "Benchmark Function",
+                options=list(BENCHMARK_REGISTRY.keys()),
+                key="single_bench",
+            )
+        else:
+            custom_expr_str = st.text_input(
+                "Expression (use x, y)",
+                value=custom_expr_str,
+                key="single_custom_expr",
+                help="Örnek: x**2 + y**2 + 10*sin(x)  |  Desteklenen fonksiyonlar: sin, cos, exp, sqrt, log...",
+            )
+            custom_low = st.number_input(
+                "Lower Bound", value=custom_low, key="single_custom_low"
+            )
+            custom_high = st.number_input(
+                "Upper Bound", value=custom_high, key="single_custom_high"
+            )
 
         n_agents = st.slider(
             "Number of Agents",
@@ -53,12 +84,33 @@ with tab_single:
 
     with col_display:
         if run_button:
-            benchmark_key = BENCHMARK_REGISTRY[benchmark_name]
-            benchmark = BENCHMARKS[benchmark_key]
+            if function_mode == "Preset Benchmark":
+                assert (
+                    benchmark_name is not None
+                )  # bu moddayken selectbox her zaman bir değer döner
+                benchmark_key = BENCHMARK_REGISTRY[benchmark_name]
+                benchmark = BENCHMARKS[benchmark_key]
+                display_name = benchmark_name
+            else:
+                try:
+                    custom_fn, parsed_expr = parse_expression(custom_expr_str)
+                except InvalidExpressionError as e:
+                    st.error(str(e))
+                    st.stop()
+
+                benchmark = BenchmarkFunction(
+                    name=f"Custom: {custom_expr_str}",
+                    fn=custom_fn,
+                    default_bounds=Bounds.uniform(custom_low, custom_high, n_dims=2),
+                    global_minimum=float("nan"),
+                )
+                display_name = f"Custom ({parsed_expr})"
+                st.caption(f"Parsed as: `{parsed_expr}`")
+
             optimizer_cls = OPTIMIZER_REGISTRY[algorithm_name]
             optimizer = optimizer_cls(n_agents=n_agents, seed=int(seed))
 
-            with st.spinner(f"Running {algorithm_name} on {benchmark_name}..."):
+            with st.spinner(f"Running {algorithm_name} on {display_name}..."):
                 states = collect_states(
                     optimizer, benchmark.fn, benchmark.default_bounds, max_iter=max_iter
                 )
