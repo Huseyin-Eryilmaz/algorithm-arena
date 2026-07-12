@@ -12,3 +12,10 @@ visualization.
 uv sync
 uv run pytest
 \`\`\`
+
+## Run the dashboard
+\`\`\`bash
+uv run streamlit run src/algorithm_arena/app/dashboard.py
+# or
+uv run algorithm-arena
+\`\`\`
