@@ -94,3 +94,17 @@ class Optimizer(ABC):
         if final_state is None:
             raise RuntimeError(f"{self.name}: optimize() hiç state yield etmedi")
         return final_state
+
+
+def collect_states(
+    optimizer: "Optimizer",
+    objective_fn: ObjectiveFn,
+    bounds: Bounds,
+    max_iter: int,
+) -> list[OptimizationState]:
+    """
+    optimize() generator'ını tüketip tüm state'leri listeye toplar.
+    Animasyon/görselleştirme gibi tüm geçmişe ihtiyaç duyan senaryolar için.
+    Dashboard'daki canlı akış için değil (o direkt generator'ı tüketecek).
+    """
+    return list(optimizer.optimize(objective_fn, bounds, max_iter))
