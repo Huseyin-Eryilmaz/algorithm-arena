@@ -12,6 +12,7 @@ dependencies = [
     "plotly>=6.9.0",
     "scipy>=1.18.0",
     "streamlit>=1.59.1",
+    "sympy>=1.14.0",
 ]
 
 [project.scripts]
