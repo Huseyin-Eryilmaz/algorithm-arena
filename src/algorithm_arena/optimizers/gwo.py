@@ -41,11 +41,6 @@ class GreyWolfOptimizer(Optimizer):
             order = np.argsort(sc)[:3]
             return pos[order].copy(), sc[order].copy()
 
-        (alpha, beta, delta), (alpha_score, _, _) = (
-            top_three(positions, scores)[0],
-            (top_three(positions, scores)[1]),
-        )
-        # yukarıdaki satır kafa karıştırıcıysa aşağıdaki açık haliyle de yazılabilir:
         leaders_pos, leaders_score = top_three(positions, scores)
         alpha, beta, delta = leaders_pos[0], leaders_pos[1], leaders_pos[2]
         alpha_score = leaders_score[0]
@@ -54,12 +49,8 @@ class GreyWolfOptimizer(Optimizer):
         global_best_score = alpha_score
 
         for iteration in range(max_iter):
-            a = 2 - iteration * (2 / max_iter)  # 2 -> 0 lineer azalış
+            a = 2 - iteration * (2 / max_iter)
 
-            for leader, weight_scale in ((alpha, 1), (beta, 1), (delta, 1)):
-                pass  # aşağıda vektörize şekilde üçü birden işleniyor
-
-            # Her lider için A ve C katsayıları rastgele üretilir
             def move_towards(leader: np.ndarray) -> np.ndarray:
                 r1 = self.rng.random((self.n_agents, n_dims))
                 r2 = self.rng.random((self.n_agents, n_dims))
@@ -72,9 +63,7 @@ class GreyWolfOptimizer(Optimizer):
             X2 = move_towards(beta)
             X3 = move_towards(delta)
 
-            positions = (X1 + X2 + X3) / 3.0
-            positions = np.clip(positions, bounds.lower, bounds.upper)
-
+            positions = np.clip((X1 + X2 + X3) / 3.0, bounds.lower, bounds.upper)
             scores = objective_fn(positions)
             leaders_pos, leaders_score = top_three(positions, scores)
             alpha, beta, delta = leaders_pos[0], leaders_pos[1], leaders_pos[2]
