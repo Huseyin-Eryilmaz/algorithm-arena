@@ -1,24 +1,45 @@
 import pytest
 
 from algorithm_arena.benchmarks.functions import BENCHMARKS
-from algorithm_arena.optimizers import PSO, GeneticAlgorithm
+from algorithm_arena.optimizers import (
+    PSO,
+    CuckooSearch,
+    GeneticAlgorithm,
+    GreyWolfOptimizer,
+    HarrisHawksOptimization,
+    SimulatedAnnealing,
+)
 
-OPTIMIZER_CLASSES = [PSO, GeneticAlgorithm]
+OPTIMIZER_CLASSES = [
+    PSO,
+    GeneticAlgorithm,
+    GreyWolfOptimizer,
+    HarrisHawksOptimization,
+    SimulatedAnnealing,
+    CuckooSearch,
+]
+
+
+CONVERGENCE_ITERS = {
+    "PSO": 100,
+    "GeneticAlgorithm": 100,
+    "GreyWolfOptimizer": 100,
+    "HarrisHawksOptimization": 100,
+    "SimulatedAnnealing": 100,
+    "CuckooSearch": 200,  # Lévy flight tabanlı, daha yavaş ama daha kararlı yakınsar
+}
 
 
 @pytest.mark.parametrize("optimizer_cls", OPTIMIZER_CLASSES)
 def test_converges_on_sphere(optimizer_cls):
-    """
-    Sphere en kolay fonksiyon (tek minimum, konveks) — her ciddi algoritma
-    yeterli iterasyonda global minimuma (0,0 civarına) yakınsamalı.
-    """
     benchmark = BENCHMARKS["sphere"]
     optimizer = optimizer_cls(n_agents=30, seed=42)
+    max_iter = CONVERGENCE_ITERS[optimizer_cls.__name__]
 
     final_state = optimizer.run_to_completion(
         objective_fn=benchmark.fn,
         bounds=benchmark.default_bounds,
-        max_iter=100,
+        max_iter=max_iter,
     )
 
     assert (
