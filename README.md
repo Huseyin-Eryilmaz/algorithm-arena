@@ -18,6 +18,12 @@ visualization and user-defined objective functions.
 - **User-defined objective functions** — write your own expression (e.g.
   `x**2 + y**2 + 10*sin(x)`) and race optimizers on it
 
+## 🚀 Live Demo
+[Try it here](https://algorithm-arena-htquudbeabvpxlcvxyfzv5.streamlit.app/)
+
+## Setup
+...
+
 ## Setup
 \`\`\`bash
 uv sync

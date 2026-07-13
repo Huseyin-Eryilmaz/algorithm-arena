@@ -34,3 +34,8 @@ jobs:
 
       - name: Verify Docker image builds
         run: docker build -t algorithm-arena-test .
+      
+      - name: Check requirements.txt is up to date
+        run: |
+          uv export --no-dev --format requirements-txt > requirements-check.txt
+          diff requirements.txt requirements-check.txt
