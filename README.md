@@ -75,7 +75,7 @@ src/algorithm_arena/
 - [x] Phase 4 — Streamlit dashboard (Single Run + Race Mode)
 - [x] Phase 5 — User-defined objective functions (safe sympy parsing)
 - [x] Phase 6 — Statistical comparison (multi-seed runs, boxplots, Wilcoxon test)
-- [ ] Phase 7 — CI/CD, Docker, deployment
+- [X] Phase 7 — CI/CD, Docker, deployment
 - [ ] Phase 8 — Final polish and presentation
 
 ## Statistical comparison methodology
