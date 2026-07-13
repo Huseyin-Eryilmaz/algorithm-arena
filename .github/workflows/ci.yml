@@ -31,3 +31,6 @@ jobs:
 
       - name: Run tests
         run: uv run pytest -v
+
+      - name: Verify Docker image builds
+        run: docker build -t algorithm-arena-test .
