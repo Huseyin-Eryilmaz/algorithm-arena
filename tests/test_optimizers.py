@@ -42,9 +42,9 @@ def test_converges_on_sphere(optimizer_cls):
         max_iter=max_iter,
     )
 
-    assert (
-        final_state.best_score < 1e-2
-    ), f"{optimizer.name} Sphere'de yakınsayamadı: {final_state.best_score}"
+    assert final_state.best_score < 1e-2, (
+        f"{optimizer.name} Sphere'de yakınsayamadı: {final_state.best_score}"
+    )
 
 
 @pytest.mark.parametrize("optimizer_cls", OPTIMIZER_CLASSES)
