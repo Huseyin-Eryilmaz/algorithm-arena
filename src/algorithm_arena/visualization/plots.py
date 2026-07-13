@@ -189,3 +189,34 @@ def build_convergence_plot(
     )
 
     return fig
+
+
+def build_boxplot(results: dict[str, np.ndarray]) -> go.Figure:
+    """
+    Birden fazla algoritmanın N-seed best_score dağılımlarını boxplot ile
+    karşılaştırır. Boxplot, ortalamanın yanında dağılımın yayılımını
+    (varyans, outlier'lar) da gösterdiği için sadece ortalama karşılaştırmaktan
+    daha bilgilendirici — bir algoritma ortalamada iyi ama tutarsız olabilir.
+    """
+    fig = go.Figure()
+
+    for algorithm_name, scores in results.items():
+        fig.add_trace(
+            go.Box(
+                y=scores,
+                name=algorithm_name,
+                boxpoints="all",  # tüm noktaları da göster, sadece kutuyu değil
+                jitter=0.4,
+                pointpos=-1.8,
+            )
+        )
+
+    fig.update_layout(
+        title="Best Score Distribution Across Runs",
+        yaxis_title="Best Score",
+        width=800,
+        height=500,
+        showlegend=False,
+    )
+
+    return fig

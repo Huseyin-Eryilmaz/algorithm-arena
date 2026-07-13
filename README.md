@@ -68,7 +68,15 @@ src/algorithm_arena/
 - [x] Phase 3 — Contour animation + convergence comparison plots
 - [x] Phase 4 — Streamlit dashboard (Single Run + Race Mode)
 - [x] Phase 5 — User-defined objective functions (safe sympy parsing)
-- [ ] Phase 6 — Statistical comparison / leaderboard (multi-seed runs, boxplots, Wilcoxon test)
+- [x] Phase 6 — Statistical comparison (multi-seed runs, boxplots, Wilcoxon test)
 - [ ] Phase 7 — CI/CD, Docker, deployment
 - [ ] Phase 8 — Final polish and presentation
-\`\`\`
+
+## Statistical comparison methodology
+
+Algorithms are compared using paired Wilcoxon signed-rank tests across N
+independent runs (same seed sequence for every algorithm, ensuring paired
+comparisons). Wilcoxon was chosen over a t-test because best-score
+distributions from metaheuristics are typically non-normal (right-skewed),
+which violates the t-test's core assumption — this is standard practice in
+the metaheuristics literature.

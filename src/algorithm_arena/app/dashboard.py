@@ -4,6 +4,7 @@ Algorithm Arena — Streamlit Dashboard.
 """
 
 import streamlit as st
+import numpy as np
 
 from algorithm_arena.app.registry import BENCHMARK_REGISTRY, OPTIMIZER_REGISTRY
 from algorithm_arena.benchmarks.functions import BENCHMARKS
@@ -16,12 +17,22 @@ from algorithm_arena.benchmarks.custom import InvalidExpressionError, parse_expr
 from algorithm_arena.benchmarks.functions import BenchmarkFunction
 from algorithm_arena.optimizers.base import Bounds
 
+from itertools import combinations
+
+from algorithm_arena.evaluation.multi_run import (
+    compare_two_algorithms,
+    run_multiple_seeds,
+)
+from algorithm_arena.visualization import build_boxplot
+
 st.set_page_config(page_title="Algorithm Arena", layout="wide")
 
 st.title("🐺 Algorithm Arena")
 st.caption("Metaheuristic optimization algorithms racing on benchmark functions")
 
-tab_single, tab_race = st.tabs(["🎯 Single Run", "🏁 Race Mode"])
+tab_single, tab_race, tab_stats = st.tabs(
+    ["🎯 Single Run", "🏁 Race Mode", "📊 Statistical Comparison"]
+)
 
 with tab_single:
     col_controls, col_display = st.columns([1, 3])
@@ -199,4 +210,112 @@ with tab_race:
         else:
             st.info(
                 "👈 Karşılaştırmak istediğin algoritmaları seç ve 'Start Race' butonuna bas."
+            )
+
+with tab_stats:
+    col_controls, col_display = st.columns([1, 3])
+
+    with col_controls:
+        st.subheader("Settings")
+
+        stat_algorithms = st.multiselect(
+            "Algorithms to Compare",
+            options=list(OPTIMIZER_REGISTRY.keys()),
+            default=list(OPTIMIZER_REGISTRY.keys())[:3],
+            key="stat_algos",
+        )
+        stat_benchmark_name = st.selectbox(
+            "Benchmark Function",
+            options=list(BENCHMARK_REGISTRY.keys()),
+            key="stat_bench",
+        )
+        stat_n_agents = st.slider(
+            "Number of Agents", min_value=5, max_value=100, value=30, key="stat_agents"
+        )
+        stat_max_iter = st.slider(
+            "Iterations per Run", min_value=10, max_value=200, value=60, key="stat_iter"
+        )
+        stat_n_runs = st.slider(
+            "Number of Runs (seeds)",
+            min_value=5,
+            max_value=50,
+            value=20,
+            key="stat_runs",
+            help="Her algoritma bu kadar farklı seed ile çalıştırılır, istatistiksel karşılaştırma için.",
+        )
+        stat_alpha = st.select_slider(
+            "Significance Level (α)",
+            options=[0.01, 0.05, 0.10],
+            value=0.05,
+            key="stat_alpha",
+        )
+
+        stat_button = st.button(
+            "📊 Run Statistical Comparison", key="stat_run_btn", type="primary"
+        )
+
+    with col_display:
+        if stat_button:
+            if len(stat_algorithms) < 2:
+                st.warning("Karşılaştırma için en az 2 algoritma seç.")
+            else:
+                benchmark_key = BENCHMARK_REGISTRY[stat_benchmark_name]
+                benchmark = BENCHMARKS[benchmark_key]
+
+                all_scores: dict[str, np.ndarray] = {}
+                progress = st.progress(0.0, text="Running multi-seed evaluation...")
+
+                for i, algo_name in enumerate(stat_algorithms):
+                    optimizer_cls = OPTIMIZER_REGISTRY[algo_name]
+                    all_scores[algo_name] = run_multiple_seeds(
+                        optimizer_cls,
+                        benchmark.fn,
+                        benchmark.default_bounds,
+                        n_agents=stat_n_agents,
+                        max_iter=stat_max_iter,
+                        n_runs=stat_n_runs,
+                    )
+                    progress.progress(
+                        (i + 1) / len(stat_algorithms), text=f"{algo_name} done"
+                    )
+
+                progress.empty()
+
+                st.subheader("📦 Score Distribution")
+                fig_box = build_boxplot(all_scores)
+                st.plotly_chart(fig_box, width="stretch")
+
+                st.subheader("📈 Summary Statistics")
+                summary_rows = [
+                    {
+                        "Algorithm": name,
+                        "Mean": f"{np.mean(scores):.6f}",
+                        "Std": f"{np.std(scores):.6f}",
+                        "Best": f"{np.min(scores):.6f}",
+                        "Worst": f"{np.max(scores):.6f}",
+                    }
+                    for name, scores in all_scores.items()
+                ]
+                st.table(summary_rows)
+
+                st.subheader("🔬 Pairwise Wilcoxon Test Results")
+                st.caption(
+                    f"α = {stat_alpha} — p < α ise fark istatistiksel olarak anlamlı kabul edilir."
+                )
+                for name_a, name_b in combinations(stat_algorithms, 2):
+                    result = compare_two_algorithms(
+                        name_a,
+                        all_scores[name_a],
+                        name_b,
+                        all_scores[name_b],
+                        alpha=stat_alpha,
+                    )
+                    icon = "✅" if result.significant else "⚪"
+                    st.write(
+                        f"{icon} **{name_a}** vs **{name_b}**: "
+                        f"p = `{result.p_value:.4f}` — {result.better}"
+                    )
+        else:
+            st.info(
+                "👈 Karşılaştırmak istediğin algoritmaları seç ve 'Run Statistical Comparison' butonuna bas."
             )
