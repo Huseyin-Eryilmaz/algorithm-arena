@@ -1,18 +1,19 @@
 FROM python:3.12-slim
 
-# uv'yi resmi image'ından kopyalayarak kuruyoruz — pip ile kurmaktan daha hızlı
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
-# Önce sadece bağımlılık dosyalarını kopyalayıp yükle — bu sayede kod
-# değiştiğinde bağımlılık katmanı Docker cache'inden yeniden kullanılır,
-# her build'de yeniden indirme yapılmaz.
+# Önce sadece bağımlılıkları kur (proje kodu olmadan) — bu adım sadece
+# pyproject.toml/uv.lock değiştiğinde yeniden çalışır, cache'ten faydalanır.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --no-install-project
 
 # Şimdi geri kalan kodu kopyala
 COPY . .
+
+# Şimdi projenin kendisini kur (src/ artık mevcut)
+RUN uv sync --frozen --no-dev
 
 EXPOSE 8501
 
