@@ -54,3 +54,19 @@ def test_convergence_plot_has_one_trace_per_algorithm():
 
     assert isinstance(fig, go.Figure)
     assert len(fig.data) == 2
+
+
+def test_boxplot_has_one_box_per_algorithm():
+    import numpy as np
+
+    from algorithm_arena.visualization import build_boxplot
+
+    results = {
+        "PSO": np.array([0.1, 0.2, 0.3]),
+        "GA": np.array([0.4, 0.5, 0.6]),
+    }
+    fig = build_boxplot(results)
+
+    assert isinstance(fig, go.Figure)
+    assert len(fig.data) == 2
+    assert all(trace.type == "box" for trace in fig.data)
