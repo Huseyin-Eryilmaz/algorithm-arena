@@ -13,7 +13,7 @@ from algorithm_arena.visualization import (
 
 benchmark = BENCHMARKS["rastrigin"]
 
-# --- Tek algoritmanın contour animasyonu
+# --- Contour animation for a single algorithm
 optimizer = PSO(n_agents=25, seed=0)
 states = collect_states(optimizer, benchmark.fn, benchmark.default_bounds, max_iter=60)
 
@@ -21,7 +21,7 @@ fig1 = build_contour_animation(benchmark, states)
 fig1.write_html("scripts/output_contour.html")
 print("Contour animation saved: scripts/output_contour.html")
 
-# --- Üç algoritmanın convergence karşılaştırması
+# --- Convergence comparison of three algorithms
 results = {}
 for cls in [PSO, GreyWolfOptimizer, HarrisHawksOptimization]:
     opt = cls(n_agents=25, seed=0)

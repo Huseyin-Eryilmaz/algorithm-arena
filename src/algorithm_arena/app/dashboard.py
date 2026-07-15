@@ -170,7 +170,7 @@ with tab_race:
     with col_display:
         if race_button:
             if not selected_algorithms:
-                st.warning("En az bir algoritma seç.")
+                st.warning("Select at least one algorithm.")
             else:
                 benchmark_key = BENCHMARK_REGISTRY[benchmark_name_race]
                 benchmark = BENCHMARKS[benchmark_key]
@@ -195,7 +195,7 @@ with tab_race:
 
                 progress.empty()
 
-                # Leaderboard: en iyi skora göre sıralı tablo
+                # Leaderboard: table sorted by best score
                 st.subheader("🏆 Leaderboard")
                 leaderboard = sorted(
                     ((name, states[-1].best_score) for name, states in results.items()),
@@ -209,7 +209,7 @@ with tab_race:
                 st.plotly_chart(fig_convergence, width="stretch")
         else:
             st.info(
-                "👈 Karşılaştırmak istediğin algoritmaları seç ve 'Start Race' butonuna bas."
+                "👈 Select the algorithms you want to compare and press 'Start Race'."
             )
 
 with tab_stats:
