@@ -20,11 +20,11 @@ def test_run_multiple_seeds_returns_correct_shape():
         base_seed=0,
     )
     assert scores.shape == (5,)
-    assert np.all(scores >= 0)  # Sphere skorları hiç negatif olamaz
+    assert np.all(scores >= 0)  # Sphere scores can never be negative
 
 
 def test_run_multiple_seeds_is_deterministic_given_same_base_seed():
-    """Aynı base_seed ile iki kere çalıştırınca birebir aynı sonuç gelmeli."""
+    """Running twice with the same base_seed must produce bit-identical results."""
     benchmark = BENCHMARKS["sphere"]
     scores_1 = run_multiple_seeds(
         PSO,
@@ -48,7 +48,7 @@ def test_run_multiple_seeds_is_deterministic_given_same_base_seed():
 
 
 def test_different_base_seeds_produce_different_results():
-    """Farklı base_seed'ler farklı (ve genelde farklı skor dağılımları) üretmeli."""
+    """Different base_seeds must produce different results (and generally different score distributions)."""
     benchmark = BENCHMARKS["rastrigin"]
     scores_a = run_multiple_seeds(
         PSO,
@@ -73,10 +73,10 @@ def test_different_base_seeds_produce_different_results():
 
 def test_compare_two_algorithms_identifies_better_one():
     """
-    Yapay olarak PSO'yu Sphere'de çok iyi (az iterasyon farkıyla) çalıştırıp
-    kendisiyle karşılaştırıyoruz - farksız çıkmalı. Sonra farklı bir
-    algoritmayla (CuckooSearch, tipik olarak daha yavaş yakınsar düşük
-    iterasyonda) karşılaştırıp anlamlı bir fark bekliyoruz.
+    We run PSO on Rastrigin with few iterations and compare it against
+    itself — no difference expected. Then we compare against a different
+    algorithm (CuckooSearch, which typically converges more slowly at low
+    iteration counts) and expect a meaningful difference.
     """
     benchmark = BENCHMARKS["rastrigin"]
 
@@ -107,12 +107,12 @@ def test_compare_two_algorithms_identifies_better_one():
     assert result.better in (
         "PSO",
         "Cuckoo Search",
-        "Fark yok (istatistiksel olarak anlamsız)",
+        "No difference (not statistically significant)",
     )
 
 
 def test_compare_two_algorithms_handles_identical_scores():
-    """İki dizi birebir aynıysa (örn. aynı algoritma, aynı seed) hata fırlatmamalı."""
+    """If the two arrays are bit-identical (e.g. same algorithm, same seed), no error must be raised."""
     scores = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     result = compare_two_algorithms("A", scores, "B", scores.copy())
 

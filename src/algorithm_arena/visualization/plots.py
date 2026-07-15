@@ -11,14 +11,14 @@ def _compute_contour_grid(
     benchmark: BenchmarkFunction, resolution: int = 100
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Benchmark fonksiyonunu resolution x resolution'lık bir grid üzerinde
-    değerlendirir. Sadece 2 boyutlu fonksiyonlar için anlamlı (contour plot
-    doğası gereği 2D) — n_dims > 2 ise ValueError fırlatır.
+    Evaluates the benchmark function on a resolution x resolution grid.
+    Only meaningful for 2-dimensional functions (contour plots are inherently
+    2D) — raises ValueError if n_dims > 2.
     """
     if benchmark.n_dims != 2:
         raise ValueError(
-            f"Contour plot sadece 2 boyutlu fonksiyonlar için desteklenir, "
-            f"'{benchmark.name}' {benchmark.n_dims} boyutlu."
+            f"Contour plots are only supported for 2-dimensional functions, "
+            f"'{benchmark.name}' has {benchmark.n_dims} dimensions."
         )
 
     x = np.linspace(
@@ -29,8 +29,8 @@ def _compute_contour_grid(
     )
     X, Y = np.meshgrid(x, y)
 
-    # objective_fn (n_agents, n_dims) bekliyor, grid noktalarını düzleştirip
-    # (resolution*resolution, 2) şekline getirip topluca değerlendiriyoruz
+    # objective_fn expects (n_agents, n_dims); we flatten the grid points into
+    # a (resolution*resolution, 2) array and evaluate them all in one batch
     grid_points = np.column_stack([X.ravel(), Y.ravel()])
     Z = benchmark.fn(grid_points).reshape(X.shape)
 
@@ -43,8 +43,8 @@ def build_contour_animation(
     resolution: int = 100,
 ) -> go.Figure:
     """
-    Benchmark fonksiyonunun contour haritası üzerinde, optimizer'ın
-    ajan pozisyonlarını iterasyon iterasyon gösteren animasyonlu figür üretir.
+    Builds an animated figure showing the optimizer's agent positions,
+    iteration by iteration, on top of the benchmark function's contour map.
     """
     X, Y, Z = _compute_contour_grid(benchmark, resolution)
 
@@ -58,7 +58,7 @@ def build_contour_animation(
         opacity=0.85,
     )
 
-    # İlk kare: ilk iterasyondaki ajan pozisyonları
+    # First frame: agent positions at the first iteration
     first_state = states[0]
     scatter_trace = go.Scatter(
         x=first_state.positions[:, 0],
@@ -71,7 +71,7 @@ def build_contour_animation(
     frames = [
         go.Frame(
             data=[
-                contour_trace,  # her karede aynı, değişmiyor
+                contour_trace,  # identical in every frame, never changes
                 go.Scatter(
                     x=state.positions[:, 0],
                     y=state.positions[:, 1],
@@ -159,8 +159,8 @@ def build_convergence_plot(
     log_scale: bool = True,
 ) -> go.Figure:
     """
-    Birden fazla algoritmanın best_score'unun iterasyona göre değişimini
-    tek bir grafikte karşılaştırır — "kim daha hızlı yakınsıyor" sorusunun cevabı.
+    Compares how each algorithm's best_score evolves over iterations in a
+    single chart — the answer to "who converges faster".
     """
     fig = go.Figure()
 
@@ -193,10 +193,10 @@ def build_convergence_plot(
 
 def build_boxplot(results: dict[str, np.ndarray]) -> go.Figure:
     """
-    Birden fazla algoritmanın N-seed best_score dağılımlarını boxplot ile
-    karşılaştırır. Boxplot, ortalamanın yanında dağılımın yayılımını
-    (varyans, outlier'lar) da gösterdiği için sadece ortalama karşılaştırmaktan
-    daha bilgilendirici — bir algoritma ortalamada iyi ama tutarsız olabilir.
+    Compares the N-seed best_score distributions of multiple algorithms with
+    boxplots. A boxplot shows the spread of the distribution (variance,
+    outliers) alongside the mean, so it is more informative than comparing
+    means alone — an algorithm can be good on average but inconsistent.
     """
     fig = go.Figure()
 
@@ -205,7 +205,7 @@ def build_boxplot(results: dict[str, np.ndarray]) -> go.Figure:
             go.Box(
                 y=scores,
                 name=algorithm_name,
-                boxpoints="all",  # tüm noktaları da göster, sadece kutuyu değil
+                boxpoints="all",  # also show every individual point, not just the box
                 jitter=0.4,
                 pointpos=-1.8,
             )

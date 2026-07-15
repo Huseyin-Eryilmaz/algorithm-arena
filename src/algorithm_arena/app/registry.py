@@ -1,7 +1,7 @@
 """
-Dashboard'da kullanıcıya gösterilecek isimler ile gerçek sınıflar/objeler
-arasındaki eşleme. UI kodunu (dashboard.py) optimizer/benchmark detaylarından
-izole etmek için ayrı bir dosyada tutuyoruz.
+Mapping between the names shown to the user in the dashboard and the actual
+classes/objects. Kept in a separate file to isolate the UI code (dashboard.py)
+from optimizer/benchmark details.
 """
 
 from algorithm_arena.benchmarks.functions import BENCHMARKS
@@ -25,4 +25,4 @@ OPTIMIZER_REGISTRY: dict[str, type[Optimizer]] = {
 }
 
 BENCHMARK_REGISTRY = {benchmark.name: key for key, benchmark in BENCHMARKS.items()}
-# Örn: {"Sphere": "sphere", "Rastrigin": "rastrigin", ...}
+# E.g.: {"Sphere": "sphere", "Rastrigin": "rastrigin", ...}

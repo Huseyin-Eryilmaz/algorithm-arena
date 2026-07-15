@@ -20,10 +20,11 @@ def run_multiple_seeds(
     **optimizer_kwargs,
 ) -> np.ndarray:
     """
-    Aynı algoritmayı n_runs farklı seed ile çalıştırıp her run'ın nihai
-    best_score'unu bir array olarak döner. Seed'ler base_seed, base_seed+1, ...
-    şeklinde deterministik üretilir — böylece iki algoritma karşılaştırılırken
-    aynı seed dizisiyle çalıştıklarından emin oluruz (paired comparison için şart).
+    Runs the same algorithm with n_runs different seeds and returns each
+    run's final best_score as an array. Seeds are generated deterministically
+    as base_seed, base_seed+1, ... — so when two algorithms are compared we
+    can be sure they ran with the same seed sequence (required for a paired
+    comparison).
     """
     scores = np.empty(n_runs)
     for i in range(n_runs):
@@ -36,7 +37,7 @@ def run_multiple_seeds(
 
 @dataclass
 class ComparisonResult:
-    """İki algoritmanın N-seed sonuçlarının istatistiksel karşılaştırması."""
+    """Statistical comparison of two algorithms' N-seed results."""
 
     algorithm_a: str
     algorithm_b: str
@@ -45,8 +46,8 @@ class ComparisonResult:
     std_a: float
     std_b: float
     p_value: float
-    significant: bool  # p_value < alpha ise True
-    better: str  # hangi algoritmanın ortalama olarak daha iyi olduğu
+    significant: bool  # True if p_value < alpha
+    better: str  # which algorithm is better on average
 
 
 def compare_two_algorithms(
@@ -57,13 +58,13 @@ def compare_two_algorithms(
     alpha: float = 0.05,
 ) -> ComparisonResult:
     """
-    İki algoritmanın eşleştirilmiş (aynı seed sırasıyla üretilmiş) sonuçlarını
-    Wilcoxon signed-rank test ile karşılaştırır.
+    Compares the paired results of two algorithms (produced with the same
+    seed sequence) using the Wilcoxon signed-rank test.
 
-    Not: Wilcoxon testi, iki dizi arasındaki farkların TAMAMEN sıfır olduğu
-    durumda (algoritmalar her seed'de birebir aynı sonucu verirse) hata
-    fırlatır — bu genelde stokastik algoritmalarda pratikte olmaz ama
-    yine de bu köşe durumunu ele alıyoruz.
+    Note: the Wilcoxon test raises an error when the differences between the
+    two arrays are ALL zero (i.e. the algorithms produce identical results on
+    every seed) — this rarely happens in practice with stochastic algorithms,
+    but we still handle the corner case.
     """
     try:
         with warnings.catch_warnings():
@@ -81,9 +82,11 @@ def compare_two_algorithms(
     significant = p_value < alpha
 
     if not significant:
-        better = "Fark yok (istatistiksel olarak anlamsız)"
+        better = "No difference (not statistically significant)"
     else:
-        better = name_a if mean_a < mean_b else name_b  # minimizasyon: düşük skor iyi
+        better = (
+            name_a if mean_a < mean_b else name_b
+        )  # minimization: lower score is better
 
     return ComparisonResult(
         algorithm_a=name_a,

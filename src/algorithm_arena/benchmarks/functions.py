@@ -9,7 +9,7 @@ from algorithm_arena.optimizers.base import Bounds, ObjectiveFn
 
 @dataclass
 class BenchmarkFunction:
-    """Bir test fonksiyonunu, sınırlarını ve bilinen global minimumunu birlikte taşır."""
+    """Bundles a test function together with its bounds and known global minimum."""
 
     name: str
     fn: ObjectiveFn
@@ -19,19 +19,19 @@ class BenchmarkFunction:
 
 
 def sphere(x: np.ndarray) -> np.ndarray:
-    """En basit fonksiyon: tek minimumlu, çanak şeklinde. x.shape = (n_agents, n_dims)."""
+    """The simplest function: single minimum, bowl-shaped. x.shape = (n_agents, n_dims)."""
     return np.sum(x**2, axis=1)
 
 
 def rastrigin(x: np.ndarray) -> np.ndarray:
-    """Çok sayıda yerel minimumu olan, algoritmaları 'kandırmak' için klasik test fonksiyonu."""
+    """Classic test function with many local minima, designed to 'trick' algorithms."""
     n_dims = x.shape[1]
     A = 10
     return A * n_dims + np.sum(x**2 - A * np.cos(2 * np.pi * x), axis=1)
 
 
 def ackley(x: np.ndarray) -> np.ndarray:
-    """Ortası düz, kenarlara doğru sert inişli — algoritmaların 'yerel minimuma takılma' testi."""
+    """Nearly flat in the middle with steep drops towards the edges — tests whether algorithms get trapped in local minima."""
     n_dims = x.shape[1]
     sum_sq = np.sum(x**2, axis=1)
     sum_cos = np.sum(np.cos(2 * np.pi * x), axis=1)
@@ -41,7 +41,7 @@ def ackley(x: np.ndarray) -> np.ndarray:
 
 
 def rosenbrock(x: np.ndarray) -> np.ndarray:
-    """'Banana function' — dar, kavisli bir vadi, algoritmaların yakınsama hızını test eder."""
+    """The 'banana function' — a narrow, curved valley that tests convergence speed."""
     return np.sum(
         100.0 * (x[:, 1:] - x[:, :-1] ** 2) ** 2 + (1 - x[:, :-1]) ** 2, axis=1
     )

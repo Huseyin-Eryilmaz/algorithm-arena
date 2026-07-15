@@ -15,17 +15,18 @@ from algorithm_arena.optimizers.base import (
 class PSO(Optimizer):
     """
     Particle Swarm Optimization.
-    Her parçacık kendi en iyi bildiği konuma (pbest) ve sürünün en iyi
-    bildiği konuma (gbest) doğru "çekilir" — kuş sürüsü davranışından esinlenilmiştir.
+    Each particle is "pulled" towards the best position it has personally
+    found (pbest) and the best position known by the swarm (gbest) —
+    inspired by the flocking behavior of birds.
     """
 
     def __init__(
         self,
         n_agents: int = 30,
         seed: int | None = None,
-        w: float = 0.7,  # atalet katsayısı — önceki hızın ne kadarının korunacağı
-        c1: float = 1.5,  # bireysel öğrenme katsayısı (pbest'e çekim gücü)
-        c2: float = 1.5,  # sosyal öğrenme katsayısı (gbest'e çekim gücü)
+        w: float = 0.7,  # inertia coefficient — how much of the previous velocity is kept
+        c1: float = 1.5,  # cognitive learning coefficient (pull towards pbest)
+        c2: float = 1.5,  # social learning coefficient (pull towards gbest)
     ):
         super().__init__(n_agents=n_agents, seed=seed)
         self.w = w
@@ -44,7 +45,7 @@ class PSO(Optimizer):
     ) -> Iterator[OptimizationState]:
         n_dims = bounds.n_dims
 
-        # Başlangıç: parçacıklar sınırlar içinde rastgele dağıtılır
+        # Initialization: particles are scattered randomly within the bounds
         positions = self.rng.uniform(
             bounds.lower, bounds.upper, size=(self.n_agents, n_dims)
         )

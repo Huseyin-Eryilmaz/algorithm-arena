@@ -1,6 +1,6 @@
 """
 Algorithm Arena — Streamlit Dashboard.
-Çalıştırmak için: uv run streamlit run src/algorithm_arena/app/dashboard.py
+To run: uv run streamlit run src/algorithm_arena/app/dashboard.py
 """
 
 import streamlit as st
@@ -50,8 +50,8 @@ with tab_single:
             key="single_mode",
         )
 
-        # Her iki dala da varsayılan değer veriyoruz, böylece hangi moda
-        # girilirse girilsin tüm değişkenler tanımlı ve doğru tipte olur.
+        # We give both branches default values, so that whichever mode is
+        # entered, every variable is defined and has the correct type.
         benchmark_name: str | None = None
         custom_expr_str: str = "x**2 + y**2"
         custom_low: float = -5.0
@@ -68,7 +68,7 @@ with tab_single:
                 "Expression (use x, y)",
                 value=custom_expr_str,
                 key="single_custom_expr",
-                help="Örnek: x**2 + y**2 + 10*sin(x)  |  Desteklenen fonksiyonlar: sin, cos, exp, sqrt, log...",
+                help="Example: x**2 + y**2 + 10*sin(x)  |  Supported functions: sin, cos, exp, sqrt, log...",
             )
             custom_low = st.number_input(
                 "Lower Bound", value=custom_low, key="single_custom_low"
@@ -98,7 +98,7 @@ with tab_single:
             if function_mode == "Preset Benchmark":
                 assert (
                     benchmark_name is not None
-                )  # bu moddayken selectbox her zaman bir değer döner
+                )  # in this mode the selectbox always returns a value
                 benchmark_key = BENCHMARK_REGISTRY[benchmark_name]
                 benchmark = BENCHMARKS[benchmark_key]
                 display_name = benchmark_name
@@ -135,7 +135,7 @@ with tab_single:
             fig_convergence = build_convergence_plot({algorithm_name: states})
             st.plotly_chart(fig_convergence, width="stretch")
         else:
-            st.info("👈 Ayarları seç ve 'Run Optimization' butonuna bas.")
+            st.info("👈 Choose your settings and press 'Run Optimization'.")
 
 with tab_race:
     col_controls, col_display = st.columns([1, 3])
@@ -241,7 +241,7 @@ with tab_stats:
             max_value=50,
             value=20,
             key="stat_runs",
-            help="Her algoritma bu kadar farklı seed ile çalıştırılır, istatistiksel karşılaştırma için.",
+            help="Each algorithm is run with this many different seeds, for the statistical comparison.",
         )
         stat_alpha = st.select_slider(
             "Significance Level (α)",
@@ -257,7 +257,7 @@ with tab_stats:
     with col_display:
         if stat_button:
             if len(stat_algorithms) < 2:
-                st.warning("Karşılaştırma için en az 2 algoritma seç.")
+                st.warning("Select at least 2 algorithms to compare.")
             else:
                 benchmark_key = BENCHMARK_REGISTRY[stat_benchmark_name]
                 benchmark = BENCHMARKS[benchmark_key]
@@ -300,7 +300,7 @@ with tab_stats:
 
                 st.subheader("🔬 Pairwise Wilcoxon Test Results")
                 st.caption(
-                    f"α = {stat_alpha} — p < α ise fark istatistiksel olarak anlamlı kabul edilir."
+                    f"α = {stat_alpha} — if p < α, the difference is considered statistically significant."
                 )
                 for name_a, name_b in combinations(stat_algorithms, 2):
                     result = compare_two_algorithms(
@@ -317,5 +317,5 @@ with tab_stats:
                     )
         else:
             st.info(
-                "👈 Karşılaştırmak istediğin algoritmaları seç ve 'Run Statistical Comparison' butonuna bas."
+                "👈 Select the algorithms you want to compare and press 'Run Statistical Comparison'."
             )

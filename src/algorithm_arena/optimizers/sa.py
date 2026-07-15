@@ -14,9 +14,10 @@ from algorithm_arena.optimizers.base import (
 
 class SimulatedAnnealing(Optimizer):
     """
-    Simulated Annealing (SA), n_agents bağımsız paralel zincir olarak.
-    Her zincir kendi sıcaklığıyla soğur; kötü adımlar exp(-delta/T) olasılığıyla
-    kabul edilir, bu da algoritmanın yerel minimuma saplanmasını engeller.
+    Simulated Annealing (SA), run as n_agents independent parallel chains.
+    Each chain cools with its own temperature; worse moves are accepted with
+    probability exp(-delta/T), which keeps the algorithm from getting stuck
+    in local minima.
     """
 
     def __init__(
@@ -25,7 +26,7 @@ class SimulatedAnnealing(Optimizer):
         seed: int | None = None,
         initial_temp: float = 10.0,
         cooling_rate: float = 0.95,
-        step_size_fraction: float = 0.1,  # sınır aralığının yüzdesi olarak komşu adım büyüklüğü
+        step_size_fraction: float = 0.1,  # neighbor step size as a fraction of the bound range
     ):
         super().__init__(n_agents=n_agents, seed=seed)
         self.initial_temp = initial_temp
@@ -65,7 +66,7 @@ class SimulatedAnnealing(Optimizer):
             candidate_scores = objective_fn(candidates)
 
             delta = candidate_scores - scores
-            # delta <= 0 -> her zaman kabul; delta > 0 -> exp(-delta/T) olasılığıyla kabul
+            # delta <= 0 -> always accept; delta > 0 -> accept with probability exp(-delta/T)
             acceptance_prob = np.exp(
                 -np.clip(delta / max(temperature, 1e-9), 0, 50) * (delta > 0)
             )

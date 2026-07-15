@@ -1,6 +1,6 @@
 """
-Faz 3 görsellerini manuel olarak deneyip HTML dosyası olarak kaydetmek için.
-Kullanım: uv run python scripts/demo_visualization.py
+For manually trying out the Phase 3 visuals and saving them as HTML files.
+Usage: uv run python scripts/demo_visualization.py
 """
 
 from algorithm_arena.benchmarks.functions import BENCHMARKS
@@ -19,7 +19,7 @@ states = collect_states(optimizer, benchmark.fn, benchmark.default_bounds, max_i
 
 fig1 = build_contour_animation(benchmark, states)
 fig1.write_html("scripts/output_contour.html")
-print("Contour animasyonu kaydedildi: scripts/output_contour.html")
+print("Contour animation saved: scripts/output_contour.html")
 
 # --- Üç algoritmanın convergence karşılaştırması
 results = {}
@@ -31,4 +31,4 @@ for cls in [PSO, GreyWolfOptimizer, HarrisHawksOptimization]:
 
 fig2 = build_convergence_plot(results)
 fig2.write_html("scripts/output_convergence.html")
-print("Convergence grafiği kaydedildi: scripts/output_convergence.html")
+print("Convergence plot saved: scripts/output_convergence.html")

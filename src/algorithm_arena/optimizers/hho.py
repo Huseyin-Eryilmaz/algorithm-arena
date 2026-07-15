@@ -15,9 +15,10 @@ from algorithm_arena.optimizers.base import (
 class HarrisHawksOptimization(Optimizer):
     """
     Harris Hawks Optimization (HHO).
-    Şahinlerin tavşan avlama stratejisi: kaçış enerjisi E, iterasyon ilerledikçe
-    2'den 0'a doğru rastgele dalgalanarak azalır. |E| >= 1 -> exploration,
-    |E| < 1 -> exploitation (farklı saldırı stilleri: soft/hard besiege).
+    Models hawks hunting a rabbit: the escape energy E fluctuates randomly
+    while decaying from 2 towards 0 as iterations progress. |E| >= 1 ->
+    exploration, |E| < 1 -> exploitation (different attack styles:
+    soft/hard besiege).
     """
 
     @property
@@ -42,13 +43,11 @@ class HarrisHawksOptimization(Optimizer):
         rabbit_score = scores[best_idx]
 
         for iteration in range(max_iter):
-            E0 = (
-                2 * self.rng.random(self.n_agents) - 1
-            )  # [-1, 1) arası başlangıç enerjisi
-            E = 2 * E0 * (1 - iteration / max_iter)  # zamanla sönümlenir
+            E0 = 2 * self.rng.random(self.n_agents) - 1  # initial energy in [-1, 1)
+            E = 2 * E0 * (1 - iteration / max_iter)  # decays over time
             J = 2 * (
                 1 - self.rng.random(self.n_agents)
-            )  # tavşanın rastgele kaçış zıplaması
+            )  # the rabbit's random escape jump
 
             new_positions = positions.copy()
 
@@ -56,7 +55,7 @@ class HarrisHawksOptimization(Optimizer):
                 e = abs(E[i])
 
                 if e >= 1:
-                    # --- Exploration: rastgele bir kaçış noktası ya da sürü ortalaması civarında ara
+                    # --- Exploration: search around a random escape point or the swarm mean
                     if self.rng.random() < 0.5:
                         rand_idx = self.rng.integers(0, self.n_agents)
                         new_positions[i] = positions[
@@ -74,7 +73,7 @@ class HarrisHawksOptimization(Optimizer):
                             + self.rng.random() * (bounds.upper - bounds.lower)
                         )
                 else:
-                    # --- Exploitation: dört farklı saldırı stili, e ve r'ye göre seçilir
+                    # --- Exploitation: four attack styles, chosen based on e and r
                     r = self.rng.random()
                     if r >= 0.5 and e >= 0.5:
                         # Soft besiege
@@ -87,7 +86,7 @@ class HarrisHawksOptimization(Optimizer):
                             rabbit_position - positions[i]
                         )
                     elif r < 0.5 and e >= 0.5:
-                        # Soft besiege with progressive rapid dives (Levy flight yaklaşımı basitleştirildi)
+                        # Soft besiege with progressive rapid dives (Levy flight approach simplified)
                         jump = rabbit_position - e * np.abs(
                             J[i] * rabbit_position - positions[i]
                         )

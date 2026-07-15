@@ -21,7 +21,7 @@ def test_parses_expression_with_trig_functions():
 
 
 def test_constant_expression_broadcasts_to_all_agents():
-    """'5' gibi x/y içermeyen bir ifade bile doğru şekilde vektöre genişlemeli."""
+    """Even an expression without x/y, like '5', must broadcast correctly into a vector."""
     fn, expr = parse_expression("5")
     positions = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]])
     scores = fn(positions)

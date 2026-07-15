@@ -24,7 +24,7 @@ def test_contour_animation_has_correct_frame_count():
 
 
 def test_contour_animation_rejects_non_2d_benchmark():
-    """Şu an sadece 2D fonksiyonlar destekleniyor, açıkça hata vermeli."""
+    """Only 2D functions are supported for now; must fail explicitly."""
     import pytest
     from algorithm_arena.optimizers.base import Bounds
     from algorithm_arena.benchmarks.functions import BenchmarkFunction, sphere
@@ -37,7 +37,7 @@ def test_contour_animation_rejects_non_2d_benchmark():
         n_dims=3,
     )
 
-    with pytest.raises(ValueError, match="2 boyutlu"):
+    with pytest.raises(ValueError, match="2-dimensional"):
         build_contour_animation(fake_3d_benchmark, states=[])
 
 

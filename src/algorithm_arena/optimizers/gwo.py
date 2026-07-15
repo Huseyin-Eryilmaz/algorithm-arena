@@ -15,9 +15,10 @@ from algorithm_arena.optimizers.base import (
 class GreyWolfOptimizer(Optimizer):
     """
     Grey Wolf Optimizer (GWO).
-    Popülasyondaki en iyi 3 birey (alpha, beta, delta) lider kabul edilir,
-    diğer tüm kurtlar bu üçünün "işaret ettiği" ortalama yöne hareket eder.
-    `a` katsayısı 2 -> 0 lineer azalarak keşiften sömürüye geçişi sağlar.
+    The top 3 individuals in the population (alpha, beta, delta) are treated
+    as leaders; all other wolves move towards the average direction these
+    three "point to". The coefficient `a` decreases linearly from 2 to 0,
+    driving the transition from exploration to exploitation.
     """
 
     @property

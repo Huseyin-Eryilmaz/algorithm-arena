@@ -1,5 +1,5 @@
 def main() -> None:
-    """`algorithm-arena` komutuyla çağrıldığında Streamlit dashboard'unu başlatır."""
+    """Launches the Streamlit dashboard when invoked via the `algorithm-arena` command."""
     import subprocess
     import sys
     from pathlib import Path
@@ -8,4 +8,4 @@ def main() -> None:
     try:
         subprocess.run([sys.executable, "-m", "streamlit", "run", str(dashboard_path)])
     except KeyboardInterrupt:
-        pass  # Ctrl+C ile normal kapatma, traceback basmaya gerek yok
+        pass  # normal shutdown via Ctrl+C, no need to print a traceback

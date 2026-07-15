@@ -26,7 +26,7 @@ CONVERGENCE_ITERS = {
     "GreyWolfOptimizer": 100,
     "HarrisHawksOptimization": 100,
     "SimulatedAnnealing": 100,
-    "CuckooSearch": 200,  # Lévy flight tabanlı, daha yavaş ama daha kararlı yakınsar
+    "CuckooSearch": 200,  # Lévy-flight based; converges more slowly but more steadily
 }
 
 
@@ -43,13 +43,13 @@ def test_converges_on_sphere(optimizer_cls):
     )
 
     assert final_state.best_score < 1e-2, (
-        f"{optimizer.name} Sphere'de yakınsayamadı: {final_state.best_score}"
+        f"{optimizer.name} failed to converge on Sphere: {final_state.best_score}"
     )
 
 
 @pytest.mark.parametrize("optimizer_cls", OPTIMIZER_CLASSES)
 def test_state_shapes_are_consistent(optimizer_cls):
-    """OptimizationState içindeki array boyutları beklenenle tutarlı mı."""
+    """Are the array shapes inside OptimizationState consistent with expectations?"""
     benchmark = BENCHMARKS["sphere"]
     optimizer = optimizer_cls(n_agents=15, seed=1)
 
@@ -69,7 +69,7 @@ def test_state_shapes_are_consistent(optimizer_cls):
 
 @pytest.mark.parametrize("optimizer_cls", OPTIMIZER_CLASSES)
 def test_best_score_never_increases(optimizer_cls):
-    """En iyi skor iterasyonlar boyunca hiç kötüleşmemeli (monoton azalan olmalı)."""
+    """The best score must never get worse across iterations (must be monotonically non-increasing)."""
     benchmark = BENCHMARKS["rastrigin"]
     optimizer = optimizer_cls(n_agents=30, seed=7)
 
@@ -83,4 +83,4 @@ def test_best_score_never_increases(optimizer_cls):
     ]
 
     for earlier, later in zip(scores_over_time, scores_over_time[1:]):
-        assert later <= earlier + 1e-9  # küçük float toleransı
+        assert later <= earlier + 1e-9  # small float tolerance

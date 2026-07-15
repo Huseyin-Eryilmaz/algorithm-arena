@@ -14,8 +14,8 @@ from algorithm_arena.optimizers.base import (
 
 class GeneticAlgorithm(Optimizer):
     """
-    Klasik gerçek-değerli genetik algoritma: turnuva seçilimi, aritmetik
-    çaprazlama (crossover), Gauss mutasyonu ve elitizm.
+    Classic real-valued genetic algorithm: tournament selection, arithmetic
+    crossover, Gaussian mutation, and elitism.
     """
 
     def __init__(
@@ -23,9 +23,9 @@ class GeneticAlgorithm(Optimizer):
         n_agents: int = 30,
         seed: int | None = None,
         mutation_rate: float = 0.1,
-        mutation_strength: float = 0.1,  # sınır aralığının yüzdesi olarak mutasyon büyüklüğü
+        mutation_strength: float = 0.1,  # mutation magnitude as a fraction of the bound range
         crossover_rate: float = 0.8,
-        elite_fraction: float = 0.1,  # en iyi bireylerin yüzde kaçının direkt korunacağı
+        elite_fraction: float = 0.1,  # fraction of top individuals carried over unchanged
         tournament_size: int = 3,
     ):
         super().__init__(n_agents=n_agents, seed=seed)
@@ -42,7 +42,7 @@ class GeneticAlgorithm(Optimizer):
     def _tournament_select(
         self, positions: np.ndarray, scores: np.ndarray
     ) -> np.ndarray:
-        """n_agents kere turnuva yapıp o kadar ebeveyn seçer (minimizasyon: düşük skor kazanır)."""
+        """Runs n_agents tournaments and selects that many parents (minimization: lowest score wins)."""
         n = len(positions)
         selected = np.empty_like(positions)
         for i in range(n):
@@ -93,7 +93,7 @@ class GeneticAlgorithm(Optimizer):
             offspring = offspring + mutation_mask * noise
             offspring = np.clip(offspring, bounds.lower, bounds.upper)
 
-            # Elitizm: en iyi bireyler yeni nesle direkt geçer (kaybolmasınlar diye)
+            # Elitism: the best individuals pass directly into the new generation (so they are never lost)
             offspring[:n_elite] = elites
 
             positions = offspring

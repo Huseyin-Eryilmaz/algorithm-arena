@@ -8,35 +8,35 @@ import numpy as np
 
 ObjectiveFn = Callable[[np.ndarray], np.ndarray]
 """
-Bir objective fonksiyonu, (n_agents, n_dims) şeklinde bir pozisyon matrisini
-girdi olarak alır, (n_agents,) şeklinde bir skor vektörü döner.
-Vektörize olması performans için önemli — her ajan için tek tek Python
-döngüsüne girmek yerine numpy'ın C-hızında toplu hesaplama yapmasını sağlar.
+An objective function takes a position matrix of shape (n_agents, n_dims)
+as input and returns a score vector of shape (n_agents,).
+Being vectorized matters for performance — instead of looping over each
+agent in Python, it lets numpy do the batch computation at C speed.
 """
 
 
 @dataclass
 class OptimizationState:
-    """Bir optimizasyon algoritmasının tek bir iterasyondaki anlık görüntüsü."""
+    """A snapshot of an optimization algorithm at a single iteration."""
 
     iteration: int
-    positions: np.ndarray  # şekil: (n_agents, n_dims) — tüm ajanların o anki konumu
-    scores: np.ndarray  # şekil: (n_agents,) — her ajanın o anki skoru
-    best_position: np.ndarray  # şu ana kadarki en iyi konum
-    best_score: float  # şu ana kadarki en iyi skor
-    algorithm_name: str = ""  # dashboard'da hangi algoritma olduğunu bilmek için
+    positions: np.ndarray  # shape: (n_agents, n_dims) — current position of every agent
+    scores: np.ndarray  # shape: (n_agents,) — current score of each agent
+    best_position: np.ndarray  # best position found so far
+    best_score: float  # best score found so far
+    algorithm_name: str = ""  # so the dashboard knows which algorithm this is
 
 
 @dataclass
 class Bounds:
-    """Arama uzayının alt/üst sınırları, her boyut için."""
+    """Lower/upper limits of the search space, per dimension."""
 
     lower: np.ndarray
     upper: np.ndarray
 
     @classmethod
     def uniform(cls, low: float, high: float, n_dims: int) -> "Bounds":
-        """Tüm boyutlar aynı [low, high] aralığındaysa kısayol."""
+        """Shortcut for when every dimension shares the same [low, high] range."""
         return cls(
             lower=np.full(n_dims, low, dtype=float),
             upper=np.full(n_dims, high, dtype=float),
@@ -49,13 +49,13 @@ class Bounds:
 
 class Optimizer(ABC):
     """
-    Tüm metasezgisel algoritmaların uyması gereken ortak arayüz.
+    Common interface that every metaheuristic algorithm must follow.
 
-    Tasarım kararı: optimize() bir generator'dır (return değil yield kullanır).
-    Bu sayede:
-      - Dashboard her iterasyonu anlık olarak çizebilir (tam sonucu beklemeden)
-      - Headless benchmark modu (Faz 6) sadece son state'i alıp devam edebilir
-      - Erken durdurma (early stopping) dışarıdan kolayca uygulanabilir
+    Design decision: optimize() is a generator (it uses yield, not return).
+    This way:
+      - The dashboard can render each iteration live (without waiting for the full result)
+      - Headless benchmark mode (Phase 6) can consume only the final state
+      - Early stopping can easily be applied from the outside
     """
 
     def __init__(self, n_agents: int = 30, seed: int | None = None):
@@ -65,7 +65,7 @@ class Optimizer(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        """Dashboard ve raporlarda gösterilecek okunabilir isim, örn. 'Particle Swarm Optimization'."""
+        """Human-readable name shown in the dashboard and reports, e.g. 'Particle Swarm Optimization'."""
         ...
 
     @abstractmethod
@@ -75,7 +75,7 @@ class Optimizer(ABC):
         bounds: Bounds,
         max_iter: int,
     ) -> Iterator[OptimizationState]:
-        """Her iterasyon sonunda bir OptimizationState yield eder."""
+        """Yields one OptimizationState at the end of every iteration."""
         ...
 
     def run_to_completion(
@@ -85,14 +85,14 @@ class Optimizer(ABC):
         max_iter: int,
     ) -> OptimizationState:
         """
-        Generator'ı sonuna kadar tüketip sadece son state'i döner.
-        Dashboard değil, hızlı test/benchmark senaryoları için kullanışlı.
+        Consumes the generator to the end and returns only the final state.
+        Useful for fast test/benchmark scenarios, not for the dashboard.
         """
         final_state = None
         for final_state in self.optimize(objective_fn, bounds, max_iter):
             pass
         if final_state is None:
-            raise RuntimeError(f"{self.name}: optimize() hiç state yield etmedi")
+            raise RuntimeError(f"{self.name}: optimize() never yielded a state")
         return final_state
 
 
@@ -103,8 +103,8 @@ def collect_states(
     max_iter: int,
 ) -> list[OptimizationState]:
     """
-    optimize() generator'ını tüketip tüm state'leri listeye toplar.
-    Animasyon/görselleştirme gibi tüm geçmişe ihtiyaç duyan senaryolar için.
-    Dashboard'daki canlı akış için değil (o direkt generator'ı tüketecek).
+    Consumes the optimize() generator and collects all states into a list.
+    For scenarios that need the full history, like animation/visualization.
+    Not for the dashboard's live stream (that consumes the generator directly).
     """
     return list(optimizer.optimize(objective_fn, bounds, max_iter))

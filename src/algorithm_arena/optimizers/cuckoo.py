@@ -16,9 +16,9 @@ def _levy_flight(
     shape: tuple[int, ...], rng: np.random.Generator, beta: float = 1.5
 ) -> np.ndarray:
     """
-    Mantegna algoritmasıyla Lévy-dağılımlı adım üretir.
-    Çoğunlukla küçük adımlar, ara sıra çok büyük sıçramalar üretir — bu da
-    Cuckoo Search'ün hem yerel arama hem global keşif yapabilmesini sağlar.
+    Generates Lévy-distributed steps using Mantegna's algorithm.
+    Produces mostly small steps with occasional very large jumps — this is
+    what lets Cuckoo Search do both local search and global exploration.
     """
     from scipy.special import gamma
 
@@ -36,16 +36,16 @@ def _levy_flight(
 class CuckooSearch(Optimizer):
     """
     Cuckoo Search (CS).
-    Her iterasyonda yuvalar Lévy flight ile yeni pozisyonlara sıçrar (keşif),
-    ayrıca pa oranındaki en kötü yuvalar terk edilip yeniden rastgele
-    kurulur (çeşitliliği korumak için).
+    Each iteration, nests jump to new positions via Lévy flights (exploration),
+    and a fraction pa of the worst nests is abandoned and rebuilt at random
+    positions (to preserve diversity).
     """
 
     def __init__(
         self,
         n_agents: int = 30,
         seed: int | None = None,
-        discovery_rate: float = 0.25,  # "pa" — ev sahibi kuş tarafından fark edilme olasılığı
+        discovery_rate: float = 0.25,  # "pa" — probability of being discovered by the host bird
         step_scale: float = 0.5,  # 0.01 -> 0.5
     ):
         super().__init__(n_agents=n_agents, seed=seed)
@@ -74,7 +74,7 @@ class CuckooSearch(Optimizer):
         global_best_score = scores[best_idx]
 
         for iteration in range(max_iter):
-            # --- Yeni çözümler: Lévy flight ile mevcut en iyiye doğru sıçrama
+            # --- New solutions: Lévy-flight jumps towards the current global best
             step = _levy_flight((self.n_agents, n_dims), self.rng)
             new_positions = positions + self.step_scale * step * (
                 positions - global_best_position
@@ -86,7 +86,7 @@ class CuckooSearch(Optimizer):
             positions[improved] = new_positions[improved]
             scores[improved] = new_scores[improved]
 
-            # --- Kötü yuvaların bir kısmı terk edilip rastgele yeniden kuruluyor
+            # --- A fraction of the worst nests is abandoned and rebuilt at random
             abandon_mask = self.rng.random(self.n_agents) < self.discovery_rate
             n_abandon = int(abandon_mask.sum())
             if n_abandon > 0:
