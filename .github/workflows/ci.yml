@@ -30,7 +30,7 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Run tests
-        run: uv run pytest -v
+        run: uv run pytest -v --cov=algorithm_arena --cov-report=term-missing --cov-fail-under=70
 
       - name: Verify Docker image builds
         run: docker build -t algorithm-arena-test .
