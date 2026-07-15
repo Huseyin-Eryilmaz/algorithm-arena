@@ -3,10 +3,11 @@
 Metaheuristic optimization algorithms racing on benchmark functions, with live
 visualization, user-defined objective functions, and statistical comparison.
 
-## 🚀 Streamlit App
+## 🚀 Live Demo
 
 [Try it here](https://algorithm-arena-htquudbeabvpxlcvxyfzv5.streamlit.app/)
 
+![Algorithm Arena demo](docs/Demo_GIFv2.0.gif)
 
 ## Features
 
