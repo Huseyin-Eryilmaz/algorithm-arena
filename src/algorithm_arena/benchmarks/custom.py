@@ -40,7 +40,7 @@ _TRANSFORMATIONS = tuple(
     t for t in standard_transformations if t.__name__ != "auto_number"
 ) + (convert_xor,)
 
-_ALLOWED_CHARS_PATTERN = re.compile(r"^[0-9a-zA-Z\s+\-*/.(),]+$")
+_ALLOWED_CHARS_PATTERN = re.compile(r"^[0-9a-zA-Z\s+\-*/.(),^]+$")
 
 
 class InvalidExpressionError(Exception):
